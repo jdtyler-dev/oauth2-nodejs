@@ -19,10 +19,11 @@
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "fs": "0.0.1-security",
+    "got": "^12.6.0",
     "https": "^1.0.0",
     "jsonwebtoken": "^9.0.0",
     "path": "^0.12.7",
-    "request": "^2.88.2",
-    "rsa-pem-from-mod-exp": "^0.8.5"
+    "rsa-pem-from-mod-exp": "^0.8.5",
+    "uuid": "^9.0.0"
   }
 }
