@@ -1,6 +1,6 @@
 var tools = require("../tools/tools.js").default.default;
 var config = require("../config.json");
-var request = require("request");
+const request = require("request");
 var express = require("express");
 var router = express.Router();
 

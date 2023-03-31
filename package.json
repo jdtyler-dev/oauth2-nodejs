@@ -10,11 +10,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/cloudbuild": "^3.5.1",
     "@google-cloud/secret-manager": "^4.2.1",
     "atob": "^2.1.2",
     "btoa": "^1.2.1",
     "client-oauth2": "^4.3.3",
     "csrf": "^3.1.0",
+    "dotenv-vault-core": "^0.7.0",
     "ejs": "^3.1.9",
     "expect": "^29.5.0",
     "express": "^4.18.2",

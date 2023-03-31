@@ -1,12 +1,14 @@
 
-var path = require('path')
-var config = require('./config.json')
-var express = require('express')
-var session = require('express-session')
-var app = express()
-
 require('dotenv-vault-core').config()
 console.log(process.env)
+
+const path = require('path');
+const config = require('./config.json');
+const express = require('express');
+const session = require('express-session');
+const app = express();
+
+require('dotenv-vault-core').config()
 
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'ejs')
@@ -14,9 +16,9 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use(session({secret: 'secret', resave: 'false', saveUninitialized: 'false'}))
 
 // Initial view - loads Connect To QuickBooks Button
-app.get('/', function (req, res) {
-  res.render('home', config)
-})
+app.get('/', (_req, res) => {
+        res.render('home', config);
+    })
 
 // Sign In With Intuit, Connect To QuickBooks, or Get App Now
 // These calls will redirect to Intuit's authorization flow
