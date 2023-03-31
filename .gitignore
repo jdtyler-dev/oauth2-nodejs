@@ -44,7 +44,6 @@ jspm_packages
 .env.development
 .env.staging
 .env.production
-.env.vault
 .env.me
 .env.*
 .flaskenv
