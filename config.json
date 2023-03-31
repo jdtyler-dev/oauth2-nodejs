@@ -1,5 +1,5 @@
 {
-  "clientId": "process.env.CLIENT_ID",
+  "clientId": "CLIENT_ID",
   "clientSecret": "ZjtYLqkO0UzKUtYTssUKQ12JAYkyk6uUDeYZ3Xv8",
   "redirectUri": "https://developer.intuit.com/v2/OAuth2Playground/RedirectUrll",
   "configurationEndpoint": "https://developer.api.intuit.com/.well-known/openid_sandbox_configuration/",

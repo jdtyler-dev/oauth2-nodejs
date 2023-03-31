@@ -1,8 +1,12 @@
+
 var path = require('path')
 var config = require('./config.json')
 var express = require('express')
 var session = require('express-session')
 var app = express()
+
+require('dotenv-vault-core').config()
+console.log(process.env)
 
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'ejs')
