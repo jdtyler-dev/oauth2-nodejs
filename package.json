@@ -10,19 +10,19 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "atob": "^2.0.3",
-    "btoa": "^1.1.2",
-    "client-oauth2": "^3.2.0",
-    "csrf": "^3.0.4",
-    "ejs": "^2.5.2",
-    "expect": "^1.20.2",
-    "express": "^4.14.0",
-    "express-session": "^1.14.2",
+    "atob": "^2.1.2",
+    "btoa": "^1.2.1",
+    "client-oauth2": "^4.3.3",
+    "csrf": "^3.1.0",
+    "ejs": "^3.1.9",
+    "expect": "^29.5.0",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
     "fs": "0.0.1-security",
     "https": "^1.0.0",
-    "jsonwebtoken": "^7.1.9",
+    "jsonwebtoken": "^9.0.0",
     "path": "^0.12.7",
-    "request": "^2.78.0",
-    "rsa-pem-from-mod-exp": "^0.8.4"
+    "request": "^2.88.2",
+    "rsa-pem-from-mod-exp": "^0.8.5"
   }
 }
