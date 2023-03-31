@@ -1,182 +1,193 @@
-require('dotenv-vault-core').config()
+import Tokens from `csrf`;
+const csrf = new Tokens();
+import ClientOAuth2 from "client-oauth2";
+const got = "got";
+import {
+  clientId as _clientId,
+  clientSecret as _clientSecret,
+  redirectUri as _redirectUri,
+  configurationEndpoint,
+  scopes
+} from "../config.json";
 
-var Tokens = require('csrf')
-var csrf = new Tokens()
-var ClientOAuth2 = require('client-oauth2')
-var got = require('got')
-var config = require('../config.json')
+export default new function() {
+  const tools = this;
 
-var Tools = function () {
-  var tools = this;
+  const authConfig = {
+    clientId: _clientId,
+    clientSecret: _clientSecret,
+    redirectUri: _redirectUri
+  };
 
-  var authConfig = {
-    clientId: config.clientId,
-    clientSecret: config.clientSecret,
-    redirectUri: config.redirectUri
-  }
+  this.dotenv = require("dotenv-vault-core").config;
 
-  this.basicAuth = require('btoa')(authConfig.clientId + ':' + authConfig.clientSecret)
+  this.basicAuth = require("btoa")(`${authConfig.clientId}:${authConfig.clientSecret}`);
 
   // Use a local copy for startup.  This will be updated in refreshEndpoints() to call:
   // https://developer.api.intuit.com/.well-known/openid_configuration/
-  this.openid_configuration = require('./openid_configuration.json')
+  this.openid_configuration = require("./openid_configuration.json");
 
   // Should be called at app start & scheduled to run once a day
   // Get the latest OAuth/OpenID endpoints from Intuit
   this.refreshEndpoints = function() {
-    got({
-      // Change this to Sandbox or non-sandbox in `config.json`
-      // Non-sandbox: https://developer.api.intuit.com/.well-known/openid_configuration/
-      // Sandbox: https://developer.api.intuit.com/.well-known/openid_sandbox_configuration/
-      url: config.configurationEndpoint,
-      headers: {
-        'Accept': 'application/json'
+    got(
+      {
+        // Change this to Sandbox or non-sandbox in `config.json`
+        // Non-sandbox: https://developer.api.intuit.com/.well-known/openid_configuration/
+        // Sandbox: https://developer.api.intuit.com/.well-known/openid_sandbox_configuration/
+        url: configurationEndpoint,
+        headers: {
+          Accept: "application/json"
+        }
+      },
+      (err, response) => {
+        if (err) {
+          return err;
+        }
+
+        // Update endpoints
+        const json = JSON.parse(response.body);
+        tools.openid_configuration = json;
+        tools.openid_uri = json.userinfo_endpoint;
+        tools.revoke_uri = json.revocation_endpoint;
+
+        // Re-create OAuth2 Client
+        authConfig.authorizationUri = json.authorization_endpoint;
+        authConfig.accessTokenUri = json.token_endpoint;
+        tools.intuitAuth = new ClientOAuth2(authConfig);
       }
-
-    }, function(err, response) {
-      if(err) {
-        console.log(err)
-        return err
-      }
-
-      // Update endpoints
-      var json = JSON.parse(response.body)
-      tools.openid_configuration = json
-      tools.openid_uri = json.userinfo_endpoint
-      tools.revoke_uri = json.revocation_endpoint
-
-      // Re-create OAuth2 Client
-      authConfig.authorizationUri = json.authorization_endpoint
-      authConfig.accessTokenUri = json.token_endpoint
-      tools.intuitAuth = new ClientOAuth2(authConfig)
-    })
-  }
+    );
+  };
 
   // Should be used to check for 401 response when making an API call.  If a 401
   // response is received, refresh tokens should be used to get a new access token,
   // and the API call should be tried again.
   this.checkForUnauthorized = function(req, requestObj, err, response) {
-    return new Promise(function (resolve, reject) {
-      if(response.statusCode == 401) {
-        console.log('Received a 401 response!  Trying to refresh tokens.')
+    return new Promise(function(resolve, reject) {
+      if (response.statusCode == 401) {
+        console.log("Received a 401 response!  Trying to refresh tokens.");
 
         // Refresh the tokens
-        tools.refreshTokens(req.session).then(function(newToken) {
-          // Try API call again, with new accessToken
-          requestObj.headers.Authorization = 'Bearer ' + newToken.accessToken
-          console.log('Trying again, making API call to: ' + requestObj.url)
-          request(requestObj, function (err, response) {
-            // Logic (including error checking) should be continued with new
-            // err/response objects.
-            resolve({err, response})
-          })
-        }, function(err) {
-          // Error refreshing the tokens
-          reject(err)
-        })
+        tools.refreshTokens(req.session).then(
+          function(newToken) {
+            // Try API call again, with new accessToken
+            requestObj.headers.Authorization = "Bearer " + newToken.accessToken;
+            console.log("Trying again, making API call to: " + requestObj.url);
+            request(requestObj, function(err, response) {
+              // Logic (including error checking) should be continued with new
+              // err/response objects.
+              resolve({ err, response });
+            });
+          },
+          function(err) {
+            // Error refreshing the tokens
+            reject(err);
+          }
+        );
       } else {
         // No 401, continue!
-        resolve({err, response})
+        resolve({ err, response });
       }
-    })
-  }
+    });
+  };
 
   // Refresh Token should be called if access token expires, or if Intuit
   // returns a 401 Unauthorized.
   this.refreshTokens = function(session) {
-    var token = this.getToken(session)
+    var token = this.getToken(session);
 
     // Call refresh API
     return token.refresh().then(function(newToken) {
       // Store the new tokens
-      tools.saveToken(session, newToken)
-      return newToken
-    })
-  }
+      tools.saveToken(session, newToken);
+      return newToken;
+    });
+  };
 
   //A static function to refresh Token with refresh token. Return the token created.
   this.refreshTokensWithToken = function(token) {
-    if(!token) {
-      return Promise.reject(new Error('Nil Token passed for refreshTokensWithToken'))
+    if (!token) {
+      return Promise.reject(new Error("Nil Token passed for refreshTokensWithToken"));
     }
 
-    request({
-      url: 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer',
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Basic ' + tools.basicAuth,
-        'Content-Type' : 'application/x-www-form-urlencoded'
+    request(
+      {
+        url: "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer",
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          Authorization: "Basic " + tools.basicAuth,
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        form: {
+          refresh_token: token,
+          grant_type: "refresh_token"
+        }
       },
-      form: {
-        refresh_token: token,
-        grant_type: 'refresh_token'
-      }
-    }, function(err, response) {
-      if(err) {
-        console.log(err)
-        return err
-      }
+      function(err, response) {
+        if (err) {
+          console.log(err);
+          return err;
+        }
 
-      var json = JSON.parse(response.body)
-      return tools.intuitAuth.createToken(
-        json.access_token, json.refresh_token,
-        json.token_type, json.x_refresh_token_expires_in)
-    })
-  }
+        var json = JSON.parse(response.body);
+        return tools.intuitAuth.createToken(
+          json.access_token,
+          json.refresh_token,
+          json.token_type,
+          json.x_refresh_token_expires_in
+        );
+      }
+    );
+  };
 
   this.setScopes = function(flowName) {
-    authConfig.scopes = config.scopes[flowName]
-    tools.intuitAuth = new ClientOAuth2(authConfig)
-  }
+    authConfig.scopes = scopes[flowName];
+    tools.intuitAuth = new ClientOAuth2(authConfig);
+  };
 
   this.containsOpenId = function() {
-    if(!authConfig.scopes) return false;
-    return authConfig.scopes.includes('openid')
-  }
+    if (!authConfig.scopes) return false;
+    return authConfig.scopes.includes("openid");
+  };
 
   // Setup OAuth2 Client with values from config.json
-  this.intuitAuth = new ClientOAuth2(authConfig)
+  this.intuitAuth = new ClientOAuth2(authConfig);
 
   // Get anti-forgery token to use for state
   this.generateAntiForgery = function(session) {
-    session.secret = csrf.secretSync()
-    return csrf.create(session.secret)
-  }
+    session.secret = csrf.secretSync();
+    return csrf.create(session.secret);
+  };
 
   this.verifyAntiForgery = function(session, token) {
-    return csrf.verify(session.secret, token)
-  }
+    return csrf.verify(session.secret, token);
+  };
 
   this.clearToken = function(session) {
-    session.accessToken = null
-    session.refreshToken = null
-    session.tokenType = null
-    session.data = null
-  }
+    session.accessToken = null;
+    session.refreshToken = null;
+    session.tokenType = null;
+    session.data = null;
+  };
 
   // Save token into session storage
   // In a real use-case, this is where tokens would have to be persisted (to a
   // a SQL DB, for example).  Both access tokens and refresh tokens need to be
   // persisted.  This should typically be stored against a user / realm ID, as well.
   this.saveToken = function(session, token) {
-    session.accessToken = token.accessToken
-    session.refreshToken = token.refreshToken
-    session.tokenType = token.tokenType
-    session.data = token.data
-  }
+    session.accessToken = token.accessToken;
+    session.refreshToken = token.refreshToken;
+    session.tokenType = token.tokenType;
+    session.data = token.data;
+  };
 
   // Get the token object from session storage
   this.getToken = function(session) {
-    if(!session.accessToken) return null
+    if (!session.accessToken) return null;
 
-    return tools.intuitAuth.createToken(
-      session.accessToken, session.refreshToken,
-      session.tokenType, session.data
-    )
-  }
+    return tools.intuitAuth.createToken(session.accessToken, session.refreshToken, session.tokenType, session.data);
+  };
 
-  this.refreshEndpoints()
-}
-
-module.exports = new Tools();
+  this.refreshEndpoints();
+}();
