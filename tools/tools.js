@@ -1,3 +1,5 @@
+require('dotenv-vault-core').config()
+
 var Tokens = require('csrf')
 var csrf = new Tokens()
 var ClientOAuth2 = require('client-oauth2')

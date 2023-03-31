@@ -1,6 +1,6 @@
 {
-  "clientId": "CLIENT_ID",
-  "clientSecret": "ZjtYLqkO0UzKUtYTssUKQ12JAYkyk6uUDeYZ3Xv8",
+  "clientId":  "process.env.CLIENT_ID",
+  "clientSecret": "process.env.CLIENT_SECRET",
   "redirectUri": "https://developer.intuit.com/v2/OAuth2Playground/RedirectUrll",
   "configurationEndpoint": "https://developer.api.intuit.com/.well-known/openid_sandbox_configuration/",
   "api_uri": "https://sandbox-quickbooks.api.intuit.com/v3/company/",
