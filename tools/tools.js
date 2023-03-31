@@ -1,7 +1,7 @@
 var Tokens = require('csrf')
 var csrf = new Tokens()
 var ClientOAuth2 = require('client-oauth2')
-var request = require('request')
+var got = require('got')
 var config = require('../config.json')
 
 var Tools = function () {
@@ -22,7 +22,7 @@ var Tools = function () {
   // Should be called at app start & scheduled to run once a day
   // Get the latest OAuth/OpenID endpoints from Intuit
   this.refreshEndpoints = function() {
-    request({
+    got({
       // Change this to Sandbox or non-sandbox in `config.json`
       // Non-sandbox: https://developer.api.intuit.com/.well-known/openid_configuration/
       // Sandbox: https://developer.api.intuit.com/.well-known/openid_sandbox_configuration/
