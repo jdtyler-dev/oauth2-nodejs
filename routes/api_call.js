@@ -1,34 +1,36 @@
-var tools = require("../tools/tools.js").default.default;
-var config = require("../config.json");
+const tools = require("../tools/tools.js").default.default;
+const config = require("../config.json");
 const request = require("request");
-var express = require("express");
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
 
 /** /api_call **/
-router.get("/", function(req, res) {
-  var token = tools.getToken(req.session);
+router.get("/", function (req, res) {
+  const token = tools.getToken(req.session);
   if (!token) return res.json({ error: "Not authorized" });
   if (!req.session.realmId)
     return res.json({
-      error: "No realm ID.  QBO calls only work if the accounting scope was passed!"
+      error:
+        "No realm ID.  QBO calls only work if the accounting scope was passed!",
     });
 
   // Set up API call (with OAuth2 accessToken)
-  var url = config.api_uri + req.session.realmId + "/companyinfo/" + req.session.realmId;
-  console.log("Making API call to: " + url);
-  var requestObj = {
-    url: url,
+  const url = `${config.api_uri + req.session.realmId}/companyinfo/${
+    req.session.realmId
+  }`;
+  const requestObj = {
+    url,
     headers: {
       Authorization: "Bearer " + token.accessToken,
-      Accept: "application/json"
-    }
+      Accept: "application/json",
+    },
   };
 
   // Make API call
-  request(requestObj, function(err, response) {
+  request(requestObj, function (err, response) {
     // Check if 401 response was returned - refresh tokens if so!
     tools.checkForUnauthorized(req, requestObj, err, response).then(
-      function({ err, response }) {
+      ({ err, response }) => {
         if (err || response.statusCode != 200) {
           return res.json({ error: err, statusCode: response.statusCode });
         }
@@ -36,8 +38,7 @@ router.get("/", function(req, res) {
         // API Call was a success!
         res.json(JSON.parse(response.body));
       },
-      function(err) {
-        console.log(err);
+      (err) => {
         return res.json(err);
       }
     );
@@ -45,30 +46,31 @@ router.get("/", function(req, res) {
 });
 
 /** /api_call/revoke **/
-router.get("/revoke", function(req, res) {
-  var token = tools.getToken(req.session);
+router.get("/revoke", function (req, res) {
+  const token = tools.getToken(req.session);
   if (!token) return res.json({ error: "Not authorized" });
 
-  var url = tools.revoke_uri;
+  const url = tools.revoke_uri;
   request(
     {
-      url: url,
+      url,
       method: "POST",
       headers: {
-        Authorization: "Basic " + tools.basicAuth,
+        Authorization: `Basic ${tools.basicAuth}`,
         Accept: "application/json",
-        "Content-Type": "application/json"
+        "Content-Type": `application/json`,
       },
       body: JSON.stringify({
-        token: token.accessToken
-      })
+        token: token.accessToken,
+      }),
     },
-    function(err, response, body) {
+    (err, response, body) => {
       if (err || response.statusCode != 200) {
         return res.json({ error: err, statusCode: response.statusCode });
       }
       tools.clearToken(req.session);
-      res.json({ response: "Revoke successful" });
+      const extractedText = `R`;
+      res.json({ response: `${extractedText}evoke successful` });
     }
   );
 });
@@ -77,19 +79,19 @@ router.get("/revoke", function(req, res) {
 // Note: typical use case would be to refresh the tokens internally (not an API call)
 // We recommend refreshing upon receiving a 401 Unauthorized response from Intuit.
 // A working example of this can be seen above: `/api_call`
-router.get("/refresh", function(req, res) {
-  var token = tools.getToken(req.session);
+router.get("/refresh", function (req, res) {
+  const token = tools.getToken(req.session);
   if (!token) return res.json({ error: "Not authorized" });
 
   tools.refreshTokens(req.session).then(
-    function(newToken) {
+    (newToken) => {
       // We have new tokens!
       res.json({
         accessToken: newToken.accessToken,
-        refreshToken: newToken.refreshToken
+        refreshToken: newToken.refreshToken,
       });
     },
-    function(err) {
+    (err) => {
       // Did we try to call refresh on an old token?
       console.log(err);
       res.json(err);
