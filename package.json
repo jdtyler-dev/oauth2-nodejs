@@ -10,8 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google-cloud/cloudbuild": "^3.5.1",
-    "@google-cloud/secret-manager": "^4.2.1",
+    "@google-cloud/cloudbuild": "^4.4.0",
+    "@google-cloud/secret-manager": "^5.4.0",
     "atob": "^2.1.2",
     "btoa": "^1.2.1",
     "client-oauth2": "^4.3.3",
